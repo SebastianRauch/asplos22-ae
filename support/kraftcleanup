@@ -3,6 +3,8 @@
 make properclean
 # git checkout . && git clean -xdf in all repositories would be fine too
 rm -rf ~/.kraftcache ~/.unikraft/libs ~/.unikraft/unikraft
+#delete the file used for generating RPC IDs for EPT
+rm -f /tmp/flexos_vmept_rpc_id_data
 kraft list update
 kraft list pull newlib@staging tlsf@staging lwip@staging \
 	unikraft@staging pthread-embedded@staging iperf@staging sqlite@staging \
