@@ -17,6 +17,25 @@ ARG UK_KRAFT_GITHUB_TOKEN=
 ENV UK_KRAFT_GITHUB_TOKEN=${UK_KRAFT_GITHUB_TOKEN}
 
 ##############
+# Genode (KVM) 3 compartments
+
+ADD https://www.doc.ic.ac.uk/~vsartako/asplos/genode.tar.gz /root
+ADD https://www.doc.ic.ac.uk/~vsartako/asplos/tch.tar.xz  /root
+RUN cd / && tar -xf /root/tch.tar.xz
+RUN cd / && tar -xf /root/genode.tar.gz
+WORKDIR /genode
+RUN mv /root/genode.tar.gz .
+RUN mv /root/tch.tar.xz .
+COPY docker-data/main.c repos/sqlite/src/sqlite/main.c
+RUN sed -i '/<arg value="--size" \/>/d' repos/sqlite/run/sqlite.run
+RUN sed -i '/<arg value="100" \/>/d' repos/sqlite/run/sqlite.run
+RUN sed -i '/<arg value="--stats" \/>/d' repos/sqlite/run/sqlite.run
+# this triggers warnings that skew results
+RUN sed -i 's/osFchown(fd,uid,gid)/0/g' /genode/repos/sqlite/src/sqlite/sqlite3.c
+RUN ./tool/create_builddir x86_64
+COPY docker-data/configs/genode.conf build/x86_64/etc/build.conf
+
+##############
 # FlexOS (KVM)
 
 WORKDIR /root/.unikraft
@@ -77,17 +96,10 @@ RUN patch -p1 < cpio-patches/05.patch
 
 WORKDIR /root/unikraft-mainline/libs
 
-RUN git clone https://github.com/unikraft/lib-newlib.git
-RUN cd lib-newlib && git checkout ddc25cf1f361e33d1003ce1842212e8ff37b1e08
-
-RUN git clone https://github.com/unikraft/lib-pthread-embedded.git
-RUN cd lib-pthread-embedded && git checkout 2dd71294ab5fac328e62932992550405c866c7e8
-
-RUN git clone https://github.com/unikraft/lib-sqlite.git
-RUN cd lib-sqlite && git checkout 21ec31d578295982619a164de96b653e93e7cf9c
-
-RUN git clone https://github.com/unikraft/lib-tlsf.git
-RUN cd lib-tlsf && git checkout ae4f7402a2c5ee6040dab799b397537177306cc9
+RUN git clone https://github.com/unikraft/lib-newlib.git && cd lib-newlib && git checkout ddc25cf1f361e33d1003ce1842212e8ff37b1e08
+RUN git clone https://github.com/unikraft/lib-pthread-embedded.git && cd lib-pthread-embedded && git checkout 2dd71294ab5fac328e62932992550405c866c7e8
+RUN git clone https://github.com/unikraft/lib-sqlite.git && cd lib-sqlite && git checkout 21ec31d578295982619a164de96b653e93e7cf9c
+RUN git clone https://github.com/unikraft/lib-tlsf.git && cd lib-tlsf && git checkout ae4f7402a2c5ee6040dab799b397537177306cc9
 
 WORKDIR /root/unikraft-mainline/apps
 
@@ -115,22 +127,6 @@ RUN cd app-sqlite-linuxu && make prepare && make -j
 
 
 ##############
-# CubicleOS (linuxu) w/ and w/o MPK
-
-#RUN mkdir -p /root/cubicleos
-#WORKDIR /root/cubicleos
-
-#RUN git clone https://github.com/lsds/CubicleOS.git && cd CubicleOS && \
-#	git checkout ASPLOS_AE
-
-#COPY docker-data/patches/cubicleos.diff /root/cubicleos/
-#RUN cd CubicleOS/ && patch -p1 < /root/cubicleos/cubicleos.diff
-#RUN cd CubicleOS/CubicleOS/app-sqlite/ && make
-#RUN cd CubicleOS/CubicleOS/kernel/ && make sqlite
-#RUN mv CubicleOS/CubicleOS/kernel/run.sh CubicleOS/CubicleOS/kernel/linuxu-start.sh
-#RUN mv CubicleOS/CubicleOS/app-sqlite/run.sh CubicleOS/CubicleOS/app-sqlite/linuxu-start.sh
-
-##############
 # Linux (process)
 
 RUN mkdir -p /root/linux-userland
@@ -140,24 +136,6 @@ COPY docker-data/main.c .
 RUN gcc main.c -lsqlite3 -O2 -o ./sqlite-benchmark
 
 
-##############
-# Genode (KVM) 3 compartments
-
-ADD https://www.doc.ic.ac.uk/~vsartako/asplos/genode.tar.gz /root
-ADD https://www.doc.ic.ac.uk/~vsartako/asplos/tch.tar.xz  /root
-RUN cd / && tar -xf /root/tch.tar.xz
-RUN cd / && tar -xf /root/genode.tar.gz
-WORKDIR /genode
-RUN mv /root/genode.tar.gz .
-RUN mv /root/tch.tar.xz .
-COPY docker-data/main.c repos/sqlite/src/sqlite/main.c
-RUN sed -i '/<arg value="--size" \/>/d' repos/sqlite/run/sqlite.run
-RUN sed -i '/<arg value="100" \/>/d' repos/sqlite/run/sqlite.run
-RUN sed -i '/<arg value="--stats" \/>/d' repos/sqlite/run/sqlite.run
-# this triggers warnings that skew results
-RUN sed -i 's/osFchown(fd,uid,gid)/0/g' /genode/repos/sqlite/src/sqlite/sqlite3.c
-RUN ./tool/create_builddir x86_64
-COPY docker-data/configs/genode.conf build/x86_64/etc/build.conf
 
 # copy start scripts last to speed up rebuilding
 COPY docker-data/start-scripts/flexos-mpk3-kvm-start.sh /root/flexos/apps/sqlite-mpk3/kvm-start.sh
