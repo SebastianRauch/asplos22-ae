@@ -96,10 +96,17 @@ RUN patch -p1 < cpio-patches/05.patch
 
 WORKDIR /root/unikraft-mainline/libs
 
-RUN git clone https://github.com/unikraft/lib-newlib.git && cd lib-newlib && git checkout ddc25cf1f361e33d1003ce1842212e8ff37b1e08
-RUN git clone https://github.com/unikraft/lib-pthread-embedded.git && cd lib-pthread-embedded && git checkout 2dd71294ab5fac328e62932992550405c866c7e8
-RUN git clone https://github.com/unikraft/lib-sqlite.git && cd lib-sqlite && git checkout 21ec31d578295982619a164de96b653e93e7cf9c
-RUN git clone https://github.com/unikraft/lib-tlsf.git && cd lib-tlsf && git checkout ae4f7402a2c5ee6040dab799b397537177306cc9
+RUN git clone https://github.com/unikraft/lib-newlib.git
+RUN cd lib-newlib && git checkout ddc25cf1f361e33d1003ce1842212e8ff37b1e08
+
+RUN git clone https://github.com/unikraft/lib-pthread-embedded.git
+RUN cd lib-pthread-embedded && git checkout 2dd71294ab5fac328e62932992550405c866c7e8
+
+RUN git clone https://github.com/unikraft/lib-sqlite.git
+RUN cd lib-sqlite && git checkout 21ec31d578295982619a164de96b653e93e7cf9c
+
+RUN git clone https://github.com/unikraft/lib-tlsf.git
+RUN cd lib-tlsf && git checkout ae4f7402a2c5ee6040dab799b397537177306cc9
 
 WORKDIR /root/unikraft-mainline/apps
 
@@ -132,9 +139,7 @@ RUN cd app-sqlite-linuxu && make prepare && make -j
 RUN mkdir -p /root/linux-userland
 WORKDIR /root/linux-userland
 COPY docker-data/main.c .
-#COPY docker-data/start-scripts/process-start.sh .
 RUN gcc main.c -lsqlite3 -O2 -o ./sqlite-benchmark
-
 
 
 # copy start scripts last to speed up rebuilding
