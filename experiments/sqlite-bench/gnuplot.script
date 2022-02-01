@@ -1,0 +1,18 @@
+#!/usr/bin/gnuplot
+set term svg
+
+set style data histogram
+set style histogram rowstacked
+set style fill pattern 2
+
+set ylabel "time to complete 5000 INSERTs (ms)"
+
+set boxwidth 0.75
+set yrange [0:800]
+
+set ytics 50
+set grid
+set xtics rotate by -45
+
+plot dfile using 2:xtic(1) lc rgb 'blue', '' using 0:($2 + 15):2 with labels 
+

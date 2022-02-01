@@ -36,7 +36,7 @@ parse_raw() {
 		| sed -r "s/\x1B\[(([0-9]+)(;[0-9]+)*)?[m,K,H,f,J]//g" \
 		| sed "s/\r//g" \
 	 	| sed "s/.*TOTAL/TOTAL/g" \
-		| awk '/TOTAL/ {print $2}' >> $file_out
+		| awk '/TOTAL/ {printf "%3.0f\n", 1000 * $2}' >> $file_out
 	done
 }
 
@@ -45,18 +45,18 @@ summarize_data() {
 	files=("$@")
 	for f in "${files[@]}"; do
 		if [ ! -f $f ]; then
-			echo "$f not found"
+			echo "# $f not found"
 			continue
 		fi
 		label=$(awk 'NR==1 {print}' $f)
 		stats=$(do_statistics $f)
-		echo "$label $stats"
+		echo "\"$label\" $stats"
 	done
 }
 
 function do_statistics() {
-	avg=$(awk 'NR > 1 {sum+=$1} END {print sum / (NR - 1)}' "$1")
-	sdev=$(awk -v OFMT='%f' -v a="$avg" 'NR > 1 {sum+=($1 - a) * ($1 - a)} END {print sqrt(sum / (NR - 2))}' "$1")
+	avg=$(awk 'NR > 1 {sum+=$1} END {printf "%3.0f", sum / (NR - 1)}' "$1")
+	sdev=$(awk -v OFMT='%f' -v a="$avg" 'NR > 1 {sum+=($1 - a) * ($1 - a)} END {printf "%3.2f\n", sqrt(sum / (NR - 2))}' "$1")
 	echo "$avg $sdev"
 }
 
