@@ -17,67 +17,12 @@ ARG UK_KRAFT_GITHUB_TOKEN=
 ENV UK_KRAFT_GITHUB_TOKEN=${UK_KRAFT_GITHUB_TOKEN}
 
 ##############
-# Genode (KVM) 3 compartments
+# Linux (process)
 
-ADD https://www.doc.ic.ac.uk/~vsartako/asplos/genode.tar.gz /root
-ADD https://www.doc.ic.ac.uk/~vsartako/asplos/tch.tar.xz  /root
-RUN cd / && tar -xf /root/tch.tar.xz
-RUN cd / && tar -xf /root/genode.tar.gz
-WORKDIR /genode
-RUN mv /root/genode.tar.gz .
-RUN mv /root/tch.tar.xz .
-COPY docker-data/main.c repos/sqlite/src/sqlite/main.c
-RUN sed -i '/<arg value="--size" \/>/d' repos/sqlite/run/sqlite.run
-RUN sed -i '/<arg value="100" \/>/d' repos/sqlite/run/sqlite.run
-RUN sed -i '/<arg value="--stats" \/>/d' repos/sqlite/run/sqlite.run
-# this triggers warnings that skew results
-RUN sed -i 's/osFchown(fd,uid,gid)/0/g' /genode/repos/sqlite/src/sqlite/sqlite3.c
-RUN ./tool/create_builddir x86_64
-COPY docker-data/configs/genode.conf build/x86_64/etc/build.conf
-
-##############
-# FlexOS (KVM)
-
-WORKDIR /root/.unikraft
-
-# build flexos with 3 compartments (vfscore+ramfs/uktime/rest)
-RUN kraftcleanup
-RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
-COPY docker-data/configs/sqlite-flexos-mpk3.config /root/.unikraft/apps/sqlite/.config
-COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite/
-COPY docker-data/configs/kraft.yaml.mpk3 /root/.unikraft/apps/sqlite/kraft.yaml
-RUN cd /root/.unikraft/apps/sqlite && make prepare && \
-	kraft -v build --no-progress --fast --compartmentalize
-RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-mpk3
-
-
-WORKDIR /root/.unikraft
-
-# build flexos with 2 compartments (EPT, vfscore/rest)
-RUN kraftcleanup
-RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-ept2
-COPY docker-data/configs/sqlite-flexos-ept2.config /root/.unikraft/apps/sqlite-ept2/.config
-COPY docker-data/configs/kraft.yaml.ept2 /root/.unikraft/apps/sqlite-ept2/kraft.yaml
-COPY docker-data/patches/flexos-ept2.diff /root/.unikraft/apps/sqlite-ept2/
-COPY docker-data/patches/flexos-ept2.diff.2 /root/.unikraft/apps/sqlite-ept2/
-RUN cd /root/.unikraft/unikraft && git checkout staging && \
-	git apply /root/.unikraft/apps/sqlite-ept2/flexos-ept2.diff.2
-RUN cd /root/.unikraft/apps/sqlite-ept2 && git apply flexos-ept2.diff && \
-	make prepare && kraft -v build --fast --compartmentalize
-
-WORKDIR /root/.unikraft
-
-# build flexos with no compartments
-RUN kraftcleanup
-#RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
-RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-fcalls
-COPY docker-data/configs/sqlite-flexos-fcalls.config /root/.unikraft/apps/sqlite-fcalls/.config
-COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite-fcalls/
-COPY docker-data/configs/kraft.yaml.fcalls /root/.unikraft/apps/sqlite-fcalls/kraft.yaml
-RUN cd /root/.unikraft/apps/sqlite-fcalls && make prepare && \
-	kraft -v build --no-progress --fast --compartmentalize
-
-RUN mv /root/.unikraft /root/flexos
+RUN mkdir -p /root/linux-userland
+WORKDIR /root/linux-userland
+COPY docker-data/main.c .
+RUN gcc main.c -lsqlite3 -O2 -o ./sqlite-benchmark
 
 ##############
 # Unikraft 0.5 (KVM and linuxu)
@@ -132,14 +77,69 @@ RUN cd app-sqlite-kvm && make prepare && make -j
 COPY docker-data/configs/sqlite-linuxu.config app-sqlite-linuxu/.config
 RUN cd app-sqlite-linuxu && make prepare && make -j
 
+##############
+# FlexOS (KVM)
+
+WORKDIR /root/.unikraft
+
+# build flexos with 3 compartments (vfscore+ramfs/uktime/rest)
+RUN kraftcleanup
+RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
+COPY docker-data/configs/sqlite-flexos-mpk3.config /root/.unikraft/apps/sqlite/.config
+COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite/
+COPY docker-data/configs/kraft.yaml.mpk3 /root/.unikraft/apps/sqlite/kraft.yaml
+RUN cd /root/.unikraft/apps/sqlite && make prepare && \
+	kraft -v build --no-progress --fast --compartmentalize
+RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-mpk3
+
+
+WORKDIR /root/.unikraft
+
+# build flexos with no compartments
+RUN kraftcleanup
+RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
+RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-fcalls
+COPY docker-data/configs/sqlite-flexos-fcalls.config /root/.unikraft/apps/sqlite-fcalls/.config
+COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite-fcalls/
+COPY docker-data/configs/kraft.yaml.fcalls /root/.unikraft/apps/sqlite-fcalls/kraft.yaml
+RUN cd /root/.unikraft/apps/sqlite-fcalls && make prepare && \
+	kraft -v build --no-progress --fast --compartmentalize
+
+
+WORKDIR /root/.unikraft
+
+# build flexos with 2 compartments (EPT, vfscore/rest)
+RUN kraftcleanup
+RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-ept2
+COPY docker-data/configs/sqlite-flexos-ept2.config /root/.unikraft/apps/sqlite-ept2/.config
+COPY docker-data/configs/kraft.yaml.ept2 /root/.unikraft/apps/sqlite-ept2/kraft.yaml
+COPY docker-data/patches/flexos-ept2.diff /root/.unikraft/apps/sqlite-ept2/
+COPY docker-data/patches/flexos-ept2.diff.2 /root/.unikraft/apps/sqlite-ept2/
+RUN cd /root/.unikraft/unikraft && git checkout staging && \
+	git apply /root/.unikraft/apps/sqlite-ept2/flexos-ept2.diff.2
+RUN cd /root/.unikraft/apps/sqlite-ept2 && git apply flexos-ept2.diff && \
+	make prepare && kraft -v build --fast --compartmentalize
+
+RUN mv /root/.unikraft /root/flexos
 
 ##############
-# Linux (process)
+# Genode (KVM) 3 compartments
 
-RUN mkdir -p /root/linux-userland
-WORKDIR /root/linux-userland
-COPY docker-data/main.c .
-RUN gcc main.c -lsqlite3 -O2 -o ./sqlite-benchmark
+ADD https://www.doc.ic.ac.uk/~vsartako/asplos/genode.tar.gz /root
+ADD https://www.doc.ic.ac.uk/~vsartako/asplos/tch.tar.xz  /root
+RUN cd / && tar -xf /root/tch.tar.xz
+RUN cd / && tar -xf /root/genode.tar.gz
+WORKDIR /genode
+RUN mv /root/genode.tar.gz .
+RUN mv /root/tch.tar.xz .
+COPY docker-data/main.c repos/sqlite/src/sqlite/main.c
+RUN sed -i '/<arg value="--size" \/>/d' repos/sqlite/run/sqlite.run
+RUN sed -i '/<arg value="100" \/>/d' repos/sqlite/run/sqlite.run
+RUN sed -i '/<arg value="--stats" \/>/d' repos/sqlite/run/sqlite.run
+# this triggers warnings that skew results
+RUN sed -i 's/osFchown(fd,uid,gid)/0/g' /genode/repos/sqlite/src/sqlite/sqlite3.c
+RUN ./tool/create_builddir x86_64
+COPY docker-data/configs/genode.conf build/x86_64/etc/build.conf
 
 
 # copy start scripts last to speed up rebuilding
