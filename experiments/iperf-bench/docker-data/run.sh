@@ -139,9 +139,9 @@ popd
 
 # FlexOS MPK 2 COMP noisolstack
 
-pushd flexos/apps/iperf-mpk2-noisolstack
-benchmark_kvm "flexos-mpk2-noisolstack"
-popd
+#pushd flexos/apps/iperf-mpk2-noisolstack
+#benchmark_kvm "flexos-mpk2-noisolstack"
+#popd
 
 # FlexOS EPT 2 COMP
 

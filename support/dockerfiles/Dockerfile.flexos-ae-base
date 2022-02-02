@@ -72,7 +72,7 @@ RUN rm /root/0001-Myshmem.patch
 WORKDIR /root
 RUN mkdir .unikraft
 RUN cd .unikraft && mkdir apps libs && git clone https://github.com/SebastianRauch/unikraft.git && \
-	cd unikraft && git checkout a9f87a14044555d3fdab39f6d70c83506e021bdf 
+	cd unikraft && git checkout 7b28ecd560e609b07a7fe414403ff75363f027b4
 COPY img.cpio /root/
 
 # unikraft

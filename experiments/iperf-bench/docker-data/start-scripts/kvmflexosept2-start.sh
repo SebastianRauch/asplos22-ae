@@ -62,6 +62,16 @@ EOF
   chmod +x ${TEMP}/ifup.sh
   chmod +x ${TEMP}/ifdown.sh
 
+  # run compartment 1
+  taskset -c $CPU_NOISOLED3,$CPU_NOISOLED4 $QEMU_BIN -enable-kvm -daemonize -display none \
+    -device myshmem,file=/data_shared,paddr=0x105000,size=0x3000 \
+    -device myshmem,file=/rpc_page,paddr=0x800000000,size=0x100000 \
+    -device myshmem,file=/heap,paddr=0x4000000000,size=0x8000000 \
+    -kernel ${1}.comp1 -m $MEM -L /root/pc-bios
+
+  # let it boot
+  sleep 2
+
   # run compartment 0
   taskset -c $CPU_NOISOLED1,$CPU_NOISOLED2 $QEMU_BIN -enable-kvm -daemonize -display none \
     -device myshmem,file=/data_shared,size=0x3000,paddr=0x105000 \
@@ -70,16 +80,6 @@ EOF
     -kernel ${1}.comp0 -m $MEM \
     -netdev tap,id=hnet0,vhost=off,script=${TEMP}/ifup.sh,downscript=${TEMP}/ifdown.sh \
     -device virtio-net-pci,netdev=hnet0,id=net0 -L /root/pc-bios
-
-  # let it boot
-  sleep 2
-
-  # run compartment 1
-  taskset -c $CPU_NOISOLED3,$CPU_NOISOLED4 $QEMU_BIN -enable-kvm -daemonize -display none \
-    -device myshmem,file=/data_shared,paddr=0x105000,size=0x3000 \
-    -device myshmem,file=/rpc_page,paddr=0x800000000,size=0x100000 \
-    -device myshmem,file=/heap,paddr=0x4000000000,size=0x8000000 \
-    -kernel ${1}.comp1 -m $MEM -L /root/pc-bios
 
   # let it boot
   sleep 2

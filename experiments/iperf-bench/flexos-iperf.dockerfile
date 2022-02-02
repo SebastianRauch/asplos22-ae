@@ -10,7 +10,8 @@
 #
 # (--security-opt seccomp:unconfined to limit docker overhead)
 
-FROM ghcr.io/project-flexos/flexos-ae-base:latest
+#FROM ghcr.io/project-flexos/flexos-ae-base:latest
+FROM flexos-ae-base:latest
 
 ARG UK_KRAFT_GITHUB_TOKEN=
 ENV UK_KRAFT_GITHUB_TOKEN=${UK_KRAFT_GITHUB_TOKEN}
@@ -38,31 +39,20 @@ RUN cd iperf && /root/build-images.sh && rm -rf build/
 RUN mv iperf iperf-mpk2-isolstack
 
 # build flexos with 2 mpk compartments (iperf/rest) and shared stacks
-RUN kraftcleanup
-RUN cd /root/.unikraft/unikraft && git checkout fdc605c0cc482c4d230885962d8aae1ad558157b && \
-	git apply /root/flexos-net.patch
-RUN sed -i "s/TCP_WND 32766/TCP_WND 65335/g" /root/.unikraft/libs/lwip/include/lwipopts.h
-RUN rm -rf /root/.unikraft/apps/iperf && cp -r iperf-mpk2-isolstack iperf-mpk2-noisolstack
-RUN sed -i "s/CONFIG_LIBFLEXOS_GATE_INTELPKU_PRIVATE_STACKS=y/# CONFIG_LIBFLEXOS_GATE_INTELPKU_PRIVATE_STACKS is not set/g" \
-	iperf-mpk2-noisolstack/.config
-RUN sed -i "s/CONFIG_LIBFLEXOS_ENABLE_DSS=y/# CONFIG_LIBFLEXOS_ENABLE_DSS is not set/g" \
-	iperf-mpk2-noisolstack/.config
-RUN sed -i "s/# CONFIG_LIBFLEXOS_GATE_INTELPKU_SHARED_STACKS is not set/CONFIG_LIBFLEXOS_GATE_INTELPKU_SHARED_STACKS=y/g" \
-	iperf-mpk2-noisolstack/.config
-RUN cd iperf-mpk2-noisolstack && rm -rf images build
-RUN cd iperf-mpk2-noisolstack && make prepare && kraft -v build --no-progress --fast --compartmentalize
-RUN cd iperf-mpk2-noisolstack && /root/build-images.sh && rm -rf build/
-
-# build flexos with 2 ept compartments (iperf/rest)
-RUN kraftcleanup
-RUN sed -i "s/TCP_WND 32766/TCP_WND 65335/g" /root/.unikraft/libs/lwip/include/lwipopts.h
-RUN cd /root/.unikraft/unikraft && git checkout fdc605c0cc482c4d230885962d8aae1ad558157b && \
-	git apply /root/flexos-net.patch && git apply /root/ept2-tmpfix.patch
-COPY docker-data/configs/iperf-flexos-ept2.config iperf/.config
-COPY docker-data/configs/kraft.yaml.ept2 iperf/kraft.yaml
-RUN cd iperf && /root/build-images.sh && rm -rf build/
-COPY docker-data/start-scripts/kvmflexosept2-start.sh iperf/kvm-start.sh
-RUN mv iperf iperf-ept2
+#RUN kraftcleanup
+#RUN cd /root/.unikraft/unikraft && git checkout fdc605c0cc482c4d230885962d8aae1ad558157b && \
+#	git apply /root/flexos-net.patch
+#RUN sed -i "s/TCP_WND 32766/TCP_WND 65335/g" /root/.unikraft/libs/lwip/include/lwipopts.h
+#RUN rm -rf /root/.unikraft/apps/iperf && cp -r iperf-mpk2-isolstack iperf-mpk2-noisolstack
+#RUN sed -i "s/CONFIG_LIBFLEXOS_GATE_INTELPKU_PRIVATE_STACKS=y/# CONFIG_LIBFLEXOS_GATE_INTELPKU_PRIVATE_STACKS is not set/g" \
+#	iperf-mpk2-noisolstack/.config
+#RUN sed -i "s/CONFIG_LIBFLEXOS_ENABLE_DSS=y/# CONFIG_LIBFLEXOS_ENABLE_DSS is not set/g" \
+#	iperf-mpk2-noisolstack/.config
+#RUN sed -i "s/# CONFIG_LIBFLEXOS_GATE_INTELPKU_SHARED_STACKS is not set/CONFIG_LIBFLEXOS_GATE_INTELPKU_SHARED_STACKS=y/g" \
+#	iperf-mpk2-noisolstack/.config
+#RUN cd iperf-mpk2-noisolstack && rm -rf images build
+#RUN cd iperf-mpk2-noisolstack && make prepare && kraft -v build --no-progress --fast --compartmentalize
+#RUN cd iperf-mpk2-noisolstack && /root/build-images.sh && rm -rf build/
 
 # build flexos with no compartments
 RUN kraftcleanup
@@ -81,7 +71,21 @@ RUN cd iperf-fcalls && make prepare && kraft -v build --no-progress --fast --com
 RUN cd iperf-fcalls && /root/build-images.sh && rm -rf build/
 COPY docker-data/start-scripts/kvmflexos-start.sh /root/.unikraft/apps/iperf-fcalls/kvm-start.sh
 
+# build flexos with 2 ept compartments (iperf/rest)
+RUN kraftcleanup
+RUN sed -i "s/TCP_WND 32766/TCP_WND 65335/g" /root/.unikraft/libs/lwip/include/lwipopts.h
+#RUN cd /root/.unikraft/unikraft && git checkout fdc605c0cc482c4d230885962d8aae1ad558157b && \
+#	git apply /root/flexos-net.patch && git apply /root/ept2-tmpfix.patch
+RUN cd /root/.unikraft/unikraft && git checkout 7b28ecd560e609b07a7fe414403ff75363f027b4 && \
+	git apply /root/flexos-net.patch
+COPY docker-data/configs/iperf-flexos-ept2.config iperf/.config
+COPY docker-data/configs/kraft.yaml.ept2 iperf/kraft.yaml
+RUN cd iperf && /root/build-images.sh && rm -rf build/
+COPY docker-data/start-scripts/kvmflexosept2-start.sh iperf/kvm-start.sh
+RUN mv iperf iperf-ept2
+
 RUN mv /root/.unikraft /root/flexos
+
 
 ##############
 # Unikraft 0.5 (KVM and linuxu)
