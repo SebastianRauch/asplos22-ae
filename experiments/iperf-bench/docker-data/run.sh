@@ -80,7 +80,7 @@ header() {
 }
 
 parse_output() {
-  res=`cat .out | awk -e '$0 ~ /0.0-/ {print $7}' | tr -d '\r'`
+  res=`cat $1 | awk -e '$0 ~ /0.0-/ {print $7}' | tr -d '\r'`
   runs=$((runs+1))
   total=$(echo "$total + $res" | bc -l)
 }
@@ -94,7 +94,7 @@ output_avg() {
 
 benchmark_kvm() {
   header $1 "KVM"
-  t=$((16 * $REPS))
+  t=$((17 * $REPS))
   for i in {4..20}; do
     cur=$(echo 2^$i | bc)
     for j in $( seq 1 $REPS); do
@@ -103,13 +103,14 @@ benchmark_kvm() {
       isept=$( grep -e "CONFIG_LIBFLEXOS_VMEPT=y" .config )
       ./kvm-start.sh run images/${cur}.img $CPU_ISOLED2 $CPU_ISOLED3 $CPU_NOISOLED1 \
 	      				$CPU_NOISOLED2 $CPU_NOISOLED3 $CPU_NOISOLED4
+      outfile=".out.${c}"
       if [ -n "$isept" ]; then
-        script .out -c "taskset -c $CPU_ISOLED1 iperf -c 172.130.0.76 -p 12345 -t 10 --format g"
+        script $outfile -c "taskset -c $CPU_ISOLED1 iperf -c 172.130.0.76 -p 12345 -t 10 --format g"
       else
-        script .out -c "taskset -c $CPU_ISOLED1 iperf -c 172.130.0.2  -p 12345 -t 10 --format g"
+        script $outfile -c "taskset -c $CPU_ISOLED1 iperf -c 172.130.0.2  -p 12345 -t 10 --format g"
       fi
       ./kvm-start.sh kill
-      parse_output
+      parse_output $outfile
     done
     output_avg $cur
   done
