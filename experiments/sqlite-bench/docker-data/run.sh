@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$1" ] || [ -z "$2" ] ; then
+	echo "must provide two isolated CPUs"
+	exit 1
+fi
+
 CPU_ISOLED1=$1
 CPU_ISOLED2=$2
 
