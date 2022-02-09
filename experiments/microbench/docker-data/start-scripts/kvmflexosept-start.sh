@@ -9,7 +9,7 @@ die() { echo "$*" 1>&2 ; exit 1; }
 
 # EDIT ME if you run me elsewhere
 
-QEMU_BIN="/root/qemu-system-ept"
+QEMU_BIN="/root/qemu/build/qemu-system-x86_64"
 
 # -----
 
@@ -32,20 +32,18 @@ run() {
   {
     sleep 3
     # run compartment 1
-    taskset -c $CPU_ISOLED1 $QEMU_BIN -enable-kvm -daemonize \
+    taskset -c $CPU_ISOLED1 $QEMU_BIN -enable-kvm -daemonize -display none -cpu host \
       -device myshmem,file=/data_shared,paddr=0x105000,size=0x2000 \
       -device myshmem,file=/rpc_page,paddr=0x800000000,size=0x100000 \
       -device myshmem,file=/heap,paddr=0x4000000000,size=0x8000000 \
-      -initrd /root/img.cpio -display none -cpu host \
       -kernel ${1}.comp1 -m $MEM -L /root/pc-bios
   } &
 
   # run compartment 0
-  taskset -c $CPU_ISOLED2 $QEMU_BIN -enable-kvm -nographic \
+  taskset -c $CPU_ISOLED2 $QEMU_BIN -enable-kvm -nographic -cpu host \
     -device myshmem,file=/data_shared,size=0x2000,paddr=0x105000 \
     -device myshmem,file=/rpc_page,size=0x100000,paddr=0x800000000 \
     -device myshmem,file=/heap,size=0x8000000,paddr=0x4000000000 \
-    -initrd /root/img.cpio -cpu host \
     -kernel ${1}.comp0 -m $MEM -L /root/pc-bios
 }
 

@@ -34,8 +34,6 @@ RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flex
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp1 flexos-microbenchmarks/images/microbench_ept_no_serialize_rdtsc.comp1
 RUN mv flexos-microbenchmarks flexos-microbenchmarks-ept
 
-COPY docker-data/start-scripts/kvmflexosept-start.sh flexos-microbenchmarks-ept/kvm-start.sh
-
 WORKDIR /root/.unikraft
 
 # build microbenchmarks for MPK
