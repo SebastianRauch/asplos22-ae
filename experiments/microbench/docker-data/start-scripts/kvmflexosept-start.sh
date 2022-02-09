@@ -9,7 +9,7 @@ die() { echo "$*" 1>&2 ; exit 1; }
 
 # EDIT ME if you run me elsewhere
 
-QEMU_BIN="/root/qemu/build/qemu-system-x86_64"
+QEMU_BIN="/root/qemu-system-ept"
 
 # -----
 
