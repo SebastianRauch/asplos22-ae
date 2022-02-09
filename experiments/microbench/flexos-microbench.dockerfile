@@ -57,7 +57,6 @@ RUN mv flexos-microbenchmarks flexos-microbenchmarks-mpk
 COPY docker-data/start-scripts/kvmflexosept-start.sh flexos-microbenchmarks-ept/kvm-start.sh
 COPY docker-data/start-scripts/kvmflexos-start.sh flexos-microbenchmarks-mpk/kvm-start.sh
 
-# TODO run script
 WORKDIR /root
 COPY docker-data/run.sh run.sh
-chmod +x run.sh
+RUN chmod +x run.sh
