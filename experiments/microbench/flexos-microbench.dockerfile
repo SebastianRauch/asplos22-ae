@@ -23,7 +23,9 @@ COPY docker-data/configs/kraft.yaml.ept apps/flexos-microbenchmarks/kraft.yaml
 COPY docker-data/vfscore-extra.ld unikraft/lib/vfscore/extra.ld
 
 WORKDIR /root/.unikraft/apps
-RUN cd flexos-microbenchmarks && git checkout 4ce6a07a4a18b9bbe7db1aba8a1edd859aec632b
+RUN cd /root/.unikraft/unikraft && git fetch && git checkout 20e1c198d4b320343c2876a466c151389f23edcf
+RUN cd flexos-microbenchmarks && git checkout db371a74930a7182bdaa62b0b5051428ddf634c0
+RUN cd /root/unikraft/libs/flexos-microbenchmarks && git checkout 3e657d9ea6efd6c1d229da99fee182738c318ef2
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mkdir flexos-microbenchmarks/images
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flexos-microbenchmarks/images/microbench_ept_serialize_rdtsc.comp0
@@ -32,6 +34,11 @@ RUN sed -i 's/#define SERIALIZE_RDTSC 1/#define SERIALIZE_RDTSC 0/g' flexos-micr
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flexos-microbenchmarks/images/microbench_ept_no_serialize_rdtsc.comp0
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp1 flexos-microbenchmarks/images/microbench_ept_no_serialize_rdtsc.comp1
+RUN sed -i 's/APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/main.c/#APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/main.c/g' flexos-microbenchmarks/Makefile.uk
+RUN sed -i 's/#APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/rpc_lb.c/APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/rpc_lb.c/g' flexos-microbenchmarks/Makefile.uk
+RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
+RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flexos-microbenchmarks/images/lower_bounds.comp0
+RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp1 flexos-microbenchmarks/images/lower.comp1
 RUN mv flexos-microbenchmarks flexos-microbenchmarks-ept
 
 WORKDIR /root/.unikraft
@@ -44,7 +51,8 @@ COPY docker-data/configs/kraft.yaml.mpk apps/flexos-microbenchmarks/kraft.yaml
 COPY docker-data/vfscore-extra.ld unikraft/lib/vfscore/extra.ld
 
 WORKDIR /root/.unikraft/apps
-RUN cd flexos-microbenchmarks && git checkout 4ce6a07a4a18b9bbe7db1aba8a1edd859aec632b
+RUN cd flexos-microbenchmarks && git checkout db371a74930a7182bdaa62b0b5051428ddf634c0
+RUN cd /root/unikraft/libs/flexos-microbenchmarks && git checkout 3e657d9ea6efd6c1d229da99fee182738c318ef2
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mkdir flexos-microbenchmarks/images
 
