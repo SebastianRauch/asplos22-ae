@@ -38,7 +38,7 @@ RUN sed -i 's/APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE
 RUN sed -i 's/#APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/rpc_lb.c/APPFLEXOSMICROBENCHMARKS_SRCS-y += $(APPFLEXOSMICROBENCHMARKS_BASE)\/rpc_lb.c/g' flexos-microbenchmarks/Makefile.uk
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flexos-microbenchmarks/images/lower_bounds.comp0
-RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp1 flexos-microbenchmarks/images/lower.comp1
+RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp1 flexos-microbenchmarks/images/lower_bounds.comp1
 RUN mv flexos-microbenchmarks flexos-microbenchmarks-ept
 
 WORKDIR /root/.unikraft
