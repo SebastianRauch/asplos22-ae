@@ -116,6 +116,24 @@ benchmark_kvm() {
   done
 }
 
+benchmark_linux() {
+  header $1 "KVM"
+  t=$((17 * $REPS))
+  for i in {4..20}; do
+    cur=$(echo 2^$i | bc)
+    for j in $( seq 1 $REPS); do
+      c=$(($(($i - 4)) * $REPS + $(($j - 1))))
+      echo "Linux / $1 run ${c}/${t}"
+      outfile=".out.${c}"
+      taskset -c $CPU_ISOLED2 executables/server_${cur} & server_pid=$(echo $!)
+      script $outfile -c "taskset -c $CPU_ISOLED1 iperf -c localhost -p 12345 -t 10 --format g"
+      kill $server_pid
+      parse_output $outfile
+	done
+    output_avg $cur
+  done
+}
+
 # ---------
 # BENCHMARK
 # ---------
@@ -153,6 +171,10 @@ popd
 # remove the first two empty lines
 tail +3 $tmp
 cat $tmp
+
+pushd linux
+benchmark_linux "Linux"
+popd
 
 duration=$SECONDS
 echo "Runtime: $(($duration / 60)) minutes and $(($duration % 60)) seconds."

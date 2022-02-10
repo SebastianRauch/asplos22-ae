@@ -118,6 +118,13 @@ COPY docker-data/configs/iperf-unikraft.config app-iperf/.config
 RUN cd app-iperf && /root/build-images.sh && rm -rf build/
 RUN cp /root/flexos/apps/iperf-fcalls/kvm-start.sh app-iperf/kvm-start.sh
 
+WORKDIR /root
+RUN mkdir linux
+COPY docker-data/linux-server.c linux/server.c
+COPY docker-data/build-linux-executables.sh linux/build-execuatbles.sh
+RUN chmod +x linux/build-execuatbles.sh
+RUN cd linux && ./build-execuatbles.sh
+
 ##############
 # Finish
 
