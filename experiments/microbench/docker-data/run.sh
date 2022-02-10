@@ -24,6 +24,6 @@ pushd ${APP_DIR_FLEXOS_MPK}
 script ${OUT_DIR}/mpk_rdtsc_serialized.dat -c "./kvm-start.sh run images/microbench_mpk_serialize_rdtsc ${CPU_ISOLED1} ${CPU_ISOLED2}"
 ./kvm-start.sh kill
 
-script ${OUT_DIR}/mpk_rdtsc_not_serialized.dat bash -c "./kvm-start.sh run images/microbenchmpkk_no_serialize_rdtsc ${CPU_ISOLED1} ${CPU_ISOLED2}"
+script ${OUT_DIR}/mpk_rdtsc_not_serialized.dat bash -c "./kvm-start.sh run images/microbench_mpk_no_serialize_rdtsc ${CPU_ISOLED1} ${CPU_ISOLED2}"
 ./kvm-start.sh kill
 popd
