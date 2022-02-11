@@ -44,7 +44,7 @@ merge_output() {
 
 	awk '/#/{print "# name  " $5}' $eptdat > $lbout
 	awk -v s="$rdtsc_oh" '/remotecall_0/{print "ept     " ($4 - s)}' $eptdat >> $lbout
-	awk -v s="$rdtsc_oh" '/lower_bound/{print  "shmem   " ($4 - s)}' $eptdat >> $lbout
+	awk -v s="$rdtsc_oh" '/lower_bound/{print  "shmem   " ($4 - s)}' $lbdat >> $lbout
 }
 
 
