@@ -25,7 +25,7 @@ COPY docker-data/vfscore-extra.ld unikraft/lib/vfscore/extra.ld
 WORKDIR /root/.unikraft/apps
 RUN cd /root/.unikraft/unikraft && git fetch && git checkout 20e1c198d4b320343c2876a466c151389f23edcf
 RUN cd flexos-microbenchmarks && git checkout 8f4dbab94ebbf3d53558f3a42979fb3858632841
-RUN cd /root/.unikraft/libs/flexos-microbenchmarks && git checkout 4414f2be8e3733b82425846549b14654c5d1bcf7
+RUN cd /root/.unikraft/libs/flexos-microbenchmarks && git checkout 7242c3ebb015244926c0c4dd442e4a6038e97fbf
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mkdir flexos-microbenchmarks/images
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64.comp0 flexos-microbenchmarks/images/microbench_ept.comp0
@@ -48,7 +48,7 @@ COPY docker-data/vfscore-extra.ld unikraft/lib/vfscore/extra.ld
 
 WORKDIR /root/.unikraft/apps
 RUN cd flexos-microbenchmarks && git checkout 8f4dbab94ebbf3d53558f3a42979fb3858632841
-RUN cd /root/.unikraft/libs/flexos-microbenchmarks && git checkout 4414f2be8e3733b82425846549b14654c5d1bcf7
+RUN cd /root/.unikraft/libs/flexos-microbenchmarks && git checkout 7242c3ebb015244926c0c4dd442e4a6038e97fbf
 RUN cd flexos-microbenchmarks && make prepare && kraft -v build --fast --compartmentalize
 RUN mkdir flexos-microbenchmarks/images
 RUN mv flexos-microbenchmarks/build/flexos-microbenchmarks_kvm-x86_64 flexos-microbenchmarks/images/microbench_mpk
