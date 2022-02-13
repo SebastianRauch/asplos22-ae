@@ -1,0 +1,9 @@
+# this file is manually created from the measurement data 
+# (files results.dat and lb_shmem.dat) that is automatically 
+# created by the run script
+
+# name  median
+"function call"   0   4   4
+"Linux syscall"   0 494 494
+"MPK gate"        0 106 106
+"VM/EPT gate"   452 426 878
