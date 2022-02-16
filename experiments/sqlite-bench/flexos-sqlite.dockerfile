@@ -68,59 +68,65 @@ COPY docker-data/Makefile app-sqlite-kvm/
 COPY docker-data/main.c app-sqlite-kvm/
 COPY docker-data/include app-sqlite-kvm/
 
-RUN cp -r app-sqlite-kvm app-sqlite-linuxu
+# RUN cp -r app-sqlite-kvm app-sqlite-linuxu
 RUN sed -i -e "s/#if 1/#if 0/g" app-sqlite-kvm/main.c
 
+COPY docker-data/sqlite.cpio app-sqlite-kvm/
 COPY docker-data/configs/sqlite-kvm.config app-sqlite-kvm/.config
 RUN cd app-sqlite-kvm && make prepare && make -j
 
-COPY docker-data/configs/sqlite-linuxu.config app-sqlite-linuxu/.config
-RUN cd app-sqlite-linuxu && make prepare && make -j
+# COPY docker-data/configs/sqlite-linuxu.config app-sqlite-linuxu/.config
+# RUN cd app-sqlite-linuxu && make prepare && make -j
 
 ##############
 # FlexOS (KVM)
 
 WORKDIR /root/.unikraft
 
-# build flexos with 3 compartments (vfscore+ramfs/uktime/rest)
+# build flexos with 2 compartments (vfscore+ramfs/uktime/rest)
 RUN kraftcleanup
 RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
-COPY docker-data/configs/sqlite-flexos-mpk3.config /root/.unikraft/apps/sqlite/.config
+COPY docker-data/configs/sqlite-flexos-mpk2.config /root/.unikraft/apps/sqlite/.config
 COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite/
-COPY docker-data/configs/kraft.yaml.mpk3 /root/.unikraft/apps/sqlite/kraft.yaml
+COPY docker-data/configs/kraft.yaml.mpk2 /root/.unikraft/apps/sqlite/kraft.yaml
 RUN cd /root/.unikraft/apps/sqlite && make prepare && \
 	kraft -v build --no-progress --fast --compartmentalize
-RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-mpk3
+RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-mpk2
 
 
 WORKDIR /root/.unikraft
 
 # build flexos with no compartments
-RUN kraftcleanup
-RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
-RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-fcalls
-COPY docker-data/configs/sqlite-flexos-fcalls.config /root/.unikraft/apps/sqlite-fcalls/.config
-COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite-fcalls/
-COPY docker-data/configs/kraft.yaml.fcalls /root/.unikraft/apps/sqlite-fcalls/kraft.yaml
-RUN cd /root/.unikraft/apps/sqlite-fcalls && make prepare && \
-	kraft -v build --no-progress --fast --compartmentalize
+# RUN kraftcleanup
+# RUN cd /root/.unikraft/unikraft && git checkout 66f546dc6a2d8e13b47846ee29450f75b3ad388a
+# RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-fcalls
+# COPY docker-data/configs/sqlite-flexos-fcalls.config /root/.unikraft/apps/sqlite-fcalls/.config
+# COPY docker-data/sqlite.cpio /root/.unikraft/apps/sqlite-fcalls/
+# COPY docker-data/configs/kraft.yaml.fcalls /root/.unikraft/apps/sqlite-fcalls/kraft.yaml
+# RUN cd /root/.unikraft/apps/sqlite-fcalls && make prepare && \
+#	 kraft -v build --no-progress --fast --compartmentalize
 
+
+
+WORKDIR /root
+# build flexos with 2 compartments (EPT, vfscore/rest)
+RUN rm -r /root/kraft && git clone https://github.com/SebastianRauch/kraft.git /root/kraft && \
+	 cd /root/kraft && git checkout f7b07120a103e4dbdf4c21e2b124eef7fc19066d && pip3 install -e .
 
 WORKDIR /root/.unikraft
-
-# build flexos with 2 compartments (EPT, vfscore/rest)
-RUN kraftcleanup
+RUN kraftcleanup && echo force_rebuild
 RUN mv /root/.unikraft/apps/sqlite /root/.unikraft/apps/sqlite-ept2
 COPY docker-data/configs/sqlite-flexos-ept2.config /root/.unikraft/apps/sqlite-ept2/.config
 COPY docker-data/configs/kraft.yaml.ept2 /root/.unikraft/apps/sqlite-ept2/kraft.yaml
 COPY docker-data/patches/flexos-ept2.diff /root/.unikraft/apps/sqlite-ept2/
 COPY docker-data/patches/flexos-ept2.diff.2 /root/.unikraft/apps/sqlite-ept2/
-RUN cd /root/.unikraft/unikraft && git checkout staging && \
+RUN cd /root/.unikraft/unikraft && git checkout 20e1c198d4b320343c2876a466c151389f23edcf && \
 	git apply /root/.unikraft/apps/sqlite-ept2/flexos-ept2.diff.2
 RUN cd /root/.unikraft/apps/sqlite-ept2 && git apply flexos-ept2.diff && \
 	make prepare && kraft -v build --fast --compartmentalize
 
 RUN mv /root/.unikraft /root/flexos
+
 
 ##############
 # Genode (KVM) 3 compartments
@@ -143,7 +149,7 @@ COPY docker-data/configs/genode.conf build/x86_64/etc/build.conf
 
 
 # copy start scripts last to speed up rebuilding
-COPY docker-data/start-scripts/flexos-mpk3-kvm-start.sh /root/flexos/apps/sqlite-mpk3/kvm-start.sh
+COPY docker-data/start-scripts/flexos-mpk2-kvm-start.sh /root/flexos/apps/sqlite-mpk2/kvm-start.sh
 COPY docker-data/start-scripts/flexos-ept2-kvm-start.sh /root/flexos/apps/sqlite-ept2/kvm-start.sh
 COPY docker-data/start-scripts/flexos-fcalls-kvm-start.sh /root/flexos/apps/sqlite-fcalls/kvm-start.sh
 COPY docker-data/start-scripts/unikraft-kvm-start.sh /root/unikraft-mainline/apps/app-sqlite-kvm/kvm-start.sh

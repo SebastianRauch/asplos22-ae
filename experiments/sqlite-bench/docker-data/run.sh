@@ -68,7 +68,7 @@ function do_statistics() {
 
 TMPDIR_FCALLS="data/flexos-fcalls"
 TMPDIR_EPT2="data/flexos-ept2"
-TMPDIR_MPK3="data/flexos-mpk3"
+TMPDIR_MPK2="data/flexos-mpk2"
 TMPDIR_UNIKRAFT_KVM="data/unikraft-kvm"
 TMPDIR_UNIKRAFT_LINUXU="data/unikraft-linuxu"
 TMPDIR_LINUX="data/linux"
@@ -77,18 +77,18 @@ TMPDIR_GENODE_SEL4="data/genode-sel4"
 DATADIR="data"
 
 # benchmark fcalls
-benchmark ${APP_DIR_FLEXOS}/sqlite-fcalls/kvm-start.sh $REPS $TMPDIR_FCALLS
-parse_raw $TMPDIR_FCALLS ${DATADIR}/flexos-fcalls.dat "flexos-fcalls"
+# benchmark ${APP_DIR_FLEXOS}/sqlite-fcalls/kvm-start.sh $REPS $TMPDIR_FCALLS
+# parse_raw $TMPDIR_FCALLS ${DATADIR}/flexos-fcalls.dat "flexos-fcalls"
 
 # benchmark ept2
 benchmark ${APP_DIR_FLEXOS}/sqlite-ept2/kvm-start.sh $REPS $TMPDIR_EPT2
 parse_raw $TMPDIR_EPT2 ${DATADIR}/flexos-ept2.dat "EPT2"
 
-# benchmark mpk3 (if PKU available)
+# benchmark mpk2 (if PKU available)
 cat /proc/cpuinfo | grep -q pku
 if [ $? -eq 0 ] ; then
-	benchmark ${APP_DIR_FLEXOS}/sqlite-mpk3/kvm-start.sh $REPS $TMPDIR_MPK3
-	parse_raw $TMPDIR_MPK3 ${DATADIR}/flexos-mpk3.dat "MPK3"
+	benchmark ${APP_DIR_FLEXOS}/sqlite-mpk2/kvm-start.sh $REPS $TMPDIR_MPK3
+	parse_raw $TMPDIR_MPK2 ${DATADIR}/flexos-mpk2.dat "MPK2"
 else
     echo "skipping MPK benchmark because PKU is unavailable"
 fi
@@ -98,8 +98,8 @@ benchmark ${APP_DIR_UNIKRAFT}/app-sqlite-kvm/kvm-start.sh $REPS $TMPDIR_UNIKRAFT
 parse_raw $TMPDIR_UNIKRAFT_KVM ${DATADIR}/unikraft-kvm.dat "Unikraft (kvm)"
 
 # benchmark unikraft-linuxu
-benchmark ${APP_DIR_UNIKRAFT}/app-sqlite-linuxu/linuxu-start.sh $REPS $TMPDIR_UNIKRAFT_LINUXU
-parse_raw $TMPDIR_UNIKRAFT_LINUXU ${DATADIR}/unikraft-linuxu.dat "Unikraft (linuxu)"
+# benchmark ${APP_DIR_UNIKRAFT}/app-sqlite-linuxu/linuxu-start.sh $REPS $TMPDIR_UNIKRAFT_LINUXU
+# parse_raw $TMPDIR_UNIKRAFT_LINUXU ${DATADIR}/unikraft-linuxu.dat "Unikraft (linuxu)"
 
 # benchmark linux userland
 benchmark ${APP_DIR_LINUX}/linux-process-start.sh $REPS $TMPDIR_LINUX
@@ -110,4 +110,4 @@ benchmark /genode/genode-sel4-start.sh $REPS $TMPDIR_GENODE_SEL4
 parse_raw $TMPDIR_GENODE_SEL4 ${DATADIR}/genode-sel4.dat "Genode (seL4)"
 
 cd $DATADIR
-summarize_data "linux.dat" "flexos-fcalls.dat" "flexos-ept2.dat" "flexos-mpk3.dat" "genode-sel4.dat" "unikraft-kvm.dat" "unikraft-linuxu.dat" > summary.dat
+summarize_data "linux.dat" "flexos-ept2.dat" "flexos-mpk2.dat" "genode-sel4.dat" "unikraft-kvm.dat" > results.dat

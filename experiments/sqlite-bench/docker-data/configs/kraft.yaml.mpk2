@@ -24,13 +24,7 @@ compartments:
   - name: comp2
     mechanism:
       driver: intel-pku
-  - name: comp3
-    mechanism:
-      driver: intel-pku
 libraries:
-  uktime:
-    is_core: true
-    compartment: comp3
   vfscore:
     is_core: true
     compartment: comp2
