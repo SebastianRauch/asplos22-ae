@@ -10,10 +10,10 @@ APP_DIR_SYSCALL="/root/linux_syscall"
 OUT_DIR="/root/data"
 mkdir ${OUT_DIR}
 
-eptdat=${OUT_DIR}/ept.dat
-lbdat=${OUT_DIR}/lower_bounds.dat
-mpkdat=${OUT_DIR}/mpk.dat
-syscalldat=${OUT_DIR}/linux_syscall.dat
+eptdat=${OUT_DIR}/.ept.dat
+lbdat=${OUT_DIR}/.lower_bounds.dat
+mpkdat=${OUT_DIR}/.mpk.dat
+syscalldat=${OUT_DIR}/.linux_syscall.dat
 
 merge_output() {
 	tmp=mktemp
@@ -34,17 +34,18 @@ merge_output() {
 	awk '/^#[:space:]*/,EOF {print $0}' $syscalldat > $tmp
 	head -n 4 $tmp > $syscalldat
 
+	shmem_rtt = $(awk -v s="$rdtsc_oh" '/remotecall_0/{print ($4 - s)}' $eptdat)
 
 	awk '/#/{print "# name  " $5}' $eptdat > $outfile
-	awk -v s="$rdtsc_oh" '/fcall_0/{print      "fcall   " ($4 - s)}' $eptdat >> $outfile
-	awk -v s="$rdtsc_oh" '/remotecall_0/{print "mpk     " ($4 - s)}' $mpkdat >> $outfile
-	awk -v s="$rdtsc_oh" '/remotecall_0/{print "ept     " ($4 - s)}' $eptdat >> $outfile
-	awk -v s="$rdtsc_oh" '/syscall/{print      "syscall " ($4 - s)}' $syscalldat >> $outfile
+	awk -v s="$rdtsc_oh" 					'/fcall_0/{print      "function call   " 0  "  " ($4 - s)      "  " ($4 - s)}' $eptdat >> $outfile
+	awk -v s="$rdtsc_oh" 					'/syscall/{print      "Linux syscall   " 0  "  " ($4 - s)      "  " ($4 - s)}' $syscalldat >> $outfile
+	awk -v s="$rdtsc_oh" 					'/remotecall_0/{print "MPK gate        " 0  "  " ($4 - s)      "  " ($4 - s)}' $mpkdat >> $outfile
+	awk -v s="$rdtsc_oh" -v lb="$shmem_rtt" '/remotecall_0/{print "VM/EPT gate     " lb "  " ($4 - s - lb) "  " ($4 - s)}' $eptdat >> $outfile
 
 
-	awk '/#/{print "# name  " $5}' $eptdat > $lbout
-	awk -v s="$rdtsc_oh" '/remotecall_0/{print "ept     " ($4 - s)}' $eptdat >> $lbout
-	awk -v s="$rdtsc_oh" '/lower_bound/{print  "shmem   " ($4 - s)}' $lbdat >> $lbout
+	# awk '/#/{print "# name  " $5}' $eptdat > $lbout
+	# awk -v s="$rdtsc_oh" '/remotecall_0/{print "ept     " ($4 - s)}' $eptdat >> $lbout
+	# awk -v s="$rdtsc_oh" '/lower_bound/{print  "shmem   " ($4 - s)}' $lbdat >> $lbout
 }
 
 
@@ -65,4 +66,4 @@ pushd ${APP_DIR_SYSCALL}
 script $syscalldat -c "taskset -c ${CPU_ISOLED1} ./syscall-test"
 popd
 
-merge_output results.dat lb_shmem.dat
+merge_output ${OUT_DIR}/results.dat ${OUT_DIR}/lb_shmem.dat
