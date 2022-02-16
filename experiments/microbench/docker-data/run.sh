@@ -34,7 +34,7 @@ merge_output() {
 	awk '/^#[:space:]*/,EOF {print $0}' $syscalldat > $tmp
 	head -n 4 $tmp > $syscalldat
 
-	shmem_rtt = $(awk -v s="$rdtsc_oh" '/remotecall_0/{print ($4 - s)}' $eptdat)
+	shmem_rtt=$(awk -v s="$rdtsc_oh" '/lower_bound/{print ($4 - s)}' $lbdat)
 
 	awk '/#/{print "# name  " $5}' $eptdat > $outfile
 	awk -v s="$rdtsc_oh" 					'/fcall_0/{print      "function call   " 0  "  " ($4 - s)      "  " ($4 - s)}' $eptdat >> $outfile
