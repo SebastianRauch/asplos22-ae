@@ -1,4 +1,7 @@
 #!/usr/bin/gnuplot
+
+#set terminal svg enhanced size 650,300 font 'Arial,20'
+#set term svg enhanced size 450,240
 set term pdf enhanced font 'Arial,16'
 
 # use logscale, display powers of two
@@ -22,7 +25,7 @@ set xlabel "Receive Buffer Size (Bytes)" offset 2,0
 set style line 1 \
 	linecolor rgb '#0060ad' \
 	linetype 1 linewidth 2 \
-	pointtype 7 pointsize 0.5
+	pointtype 5 pointsize 0.5
 
 set style line 2 \
 	linecolor rgb '#dd181f' \
@@ -32,8 +35,8 @@ set style line 2 \
 set style line 3 \
 	linecolor rgb '#33cc33f' \
 	linetype 1 linewidth 2 \
-	pointtype 7 pointsize 0.5
+	pointtype 13 pointsize 0.5
 
-plot 'results/iperf.dat' 	index 0 with linespoints linestyle 1 title "Unikraft", \
-	 ''						index 1 with linespoints linestyle 2 title "FlexOS MPK", \
-	 ''						index 2 with linespoints linestyle 3 title "FlexOS VM/EPT"
+plot 'iperf.dat' 	index 0 with linespoints linestyle 1 title "Unikraft", \
+	 ''				index 1 with linespoints linestyle 2 title "FlexOS MPK", \
+	 ''				index 2 with linespoints linestyle 3 title "FlexOS VM/EPT"

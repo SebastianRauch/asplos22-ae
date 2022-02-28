@@ -2,8 +2,8 @@
 
 ## Overview
 
-Time to perform 5000 INSERT queries with SQLite on Unikraft, FlexOS, Linux, SeL4
-(with the Genode system). 
+Time to perform 5000 INSERT queries with SQLite on Unikraft, 
+FlexOS with the MPK and VM/EPT backends, Linux, SeL4 (with the Genode system). 
 
 ## Produce Measurements
 Build docker image and run it:
@@ -17,13 +17,13 @@ Start `/root/run.sh` script and give it two isolated CPUs:
 /root/run.sh <ISOL_CPU1> <ISOL_CPU2>
 ```
 
-Extract file containing the processed measurement data at `/root/data/summary.dat`:
+Extract file containing the processed measurement data located at `/out/results/sqlite.dat`:
 ```
-docker cp <CONTAINER-ID>:/root/data/summary.dat <PATH/ON/HOST>/summary.dat
+docker cp <CONTAINER-ID>:/out/results/sqlite.dat <PATH/ON/HOST>/sqlite.dat
 ```
 
 ## Plot
 Feed the measurement data to the plot script:
 ```
-plot.sh <PATH/ON/HOST>/summary.dat gnuplot.script <out.svg>
+plot.sh <PATH/ON/HOST>/sqlite.dat gnuplot.script <out.pdf>
 ```

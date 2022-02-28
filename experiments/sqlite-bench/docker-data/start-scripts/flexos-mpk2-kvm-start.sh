@@ -3,7 +3,7 @@
 CPU_ISOLED1=$1
 CPU_ISOLED2=$2
 
-APP_DIR="/root/flexos/apps/sqlite-mpk3"
+APP_DIR="/root/flexos/apps/sqlite-mpk2"
 
 # verbose output
 set -x

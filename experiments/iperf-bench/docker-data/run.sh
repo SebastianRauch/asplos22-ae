@@ -1,11 +1,12 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Authors: Hugo Lefeuvre <hugo.lefeuvre@manchester.ac.uk>
+# Authors: 	Hugo Lefeuvre <hugo.lefeuvre@manchester.ac.uk>
+# edited by Sebastian Rauch <s.rauch94@gmail.com>
 
 SECONDS=0
 
-# Run SQLite benchmark for Linux (userland process), Unikraft 0.5 (linuxu and
-# kvm), FlexOS (kvm), CubicleOS (linuxu).
+# Run SQLite benchmark for Linux (userland process), Unikraft 0.5 (kvm), 
+# FlexOS (kvm), and Genode with the seL4 microkernel.
 
 CPU_ISOLED1=$1
 CPU_ISOLED2=$2
@@ -155,12 +156,6 @@ popd
 pushd flexos/apps/iperf-mpk2-isolstack
 benchmark_kvm "flexos-mpk2-isolstack"
 popd
-
-# FlexOS MPK 2 COMP noisolstack
-
-#pushd flexos/apps/iperf-mpk2-noisolstack
-#benchmark_kvm "flexos-mpk2-noisolstack"
-#popd
 
 # FlexOS EPT 2 COMP
 
