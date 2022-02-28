@@ -14,7 +14,7 @@ docker run --privileged --security-opt seccomp:unconfined -ti flexos-sqlite bash
 
 Start `/root/run.sh` script and give it two isolated CPUs:
 ```
-/root/run.sh <ISOL_CPU1> <ISOL_CPU2>
+/root/run.sh <ISOL_CPU1> <ISOL_CPU2> <ISOL_CPU3> <NO_ISOL_CPU1> <NO_ISOL_CPU2> <NO_ISOL_CPU3> <NO_ISOL_CPU4>
 ```
 
 Extract file containing the processed measurement data located at `/out/results/sqlite.dat`:
